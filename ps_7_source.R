@@ -13,7 +13,7 @@ library(lubridate)
 #Here we are reading in Mr. Schroeder's data and then creating a state_district variable that we can use to map it with the Upshot data.
 # Then we made the state and state_district variables lower case, just so that will stay consisent across each.
 
-df <- read.csv("mt_2_results.csv") %>% 
+df <- read.csv("mt_2_results.csv", stringsAsFactors = FALSE) %>% 
   mutate(state = as.character(ï..state)) %>% 
   unite("state_district", c("ï..state", "district"), sep = "-") %>% 
   mutate(state_district = tolower(state_district)) %>% 
@@ -54,5 +54,48 @@ wave3 <- newps7 %>%
   mutate(district = str_sub(source, -8, -7)) %>%
   unite("state_district", c("state", "district"), sep = "-", remove = FALSE) 
 
+# Performed a left join on the two datasets and joined by the state_district variable that was created in each.
+
 both <- left_join(wave3, df, by = "state_district")
 
+
+
+# These lines of code below are determining the predicted democratic advantage in each of the district races. The group_by and
+# tally and spread allow for the weighting and counting of the responses and the total interviews conducted
+
+
+polled <- both %>% 
+  select(state_district, response, final_weight) %>%
+  group_by(response, state_district) %>%
+  tally(wt = final_weight) %>%
+  spread(response, n) 
+
+# This line of code is making all of the n/a values equal to 0.
+
+polled[is.na(polled)] <- 0
+
+#These lines of code are converting the predicted advantages into percentages.
+
+polled <- polled %>% 
+  mutate(total = Dem + Rep + Und + `3` + `4` + `5`) %>%
+  mutate(dem_advantage = ((Dem - Rep) / total)*100) %>%
+  select(state_district, dem_advantage)
+
+
+
+df[, 4]  <- as.numeric(df[, 4])
+df[, 5]  <- as.numeric(df[, 5])
+df[, 6]  <- as.numeric(df[, 6])
+
+results <- df %>%  
+  mutate(total = rep_votes + dem_votes + other_votes) %>%
+  mutate(dem_advantage = ((rep_votes - dem_votes) / total)*100) %>%
+  select(state_district, win_party, dem_advantage)
+
+
+
+
+
+
+  
+write_rds(final_data,"ps_7_reimers_pirrmann_ryan/ps7.rds",compress="none")

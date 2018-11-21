@@ -18,9 +18,7 @@ df <- read_csv("mt_2_results.csv") %>%
   mutate(state = as.character(state)) %>% 
   unite("state_district", c("state", "district"), sep = "-", remove = FALSE) %>%
   mutate(state_district = tolower(state_district)) %>%
-  mutate(state = tolower(state))
-
-
+  mutate(state = tolower(state)) 
 
 
 
@@ -96,4 +94,4 @@ results <- df %>%
 joined <- left_join(polled, results, by = "state_district")
 
 
-write_rds(joined,"ps_7_reimers_pirrmann_ryan/ps7.rds",compress="none")
+final_data <- write_rds(joined,"ps_7_reimers_pirrmann_ryan/ps7.rds",compress="none")

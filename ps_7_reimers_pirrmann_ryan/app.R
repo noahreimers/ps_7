@@ -11,44 +11,43 @@ library(shiny)
 library(tidyverse)
 library(readr)
 
-# First we are reading in the 
+ps7 <- readRDS("ps7.rds")
+
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
-   
-   # Application title
-   titlePanel("Old Faithful Geyser Data"),
-   
-   # Sidebar with a slider input for number of bins 
-   sidebarLayout(
-      sidebarPanel(
-         sliderInput("bins",
-                     "Number of bins:",
-                     min = 1,
-                     max = 50,
-                     value = 30)
-      ),
-      
-      # Show a plot of the generated distribution
-      mainPanel(
-         plotOutput("distPlot")
-      )
-   )
+  
+  # Application title
+  titlePanel("Democratic Advantage"),
+  
+  # Sidebar with a slider input for number of bins 
+  sidebarLayout(
+    sidebarPanel(
+      selectInput(inputId = "win_party",
+                  label = "Victorious Party",
+                  choices = c("R",
+                              "D",
+                              "UNDECIDED"))
+    ),
+    
+    # Show a plot of the generated distribution
+    mainPanel(
+      plotOutput("DemAdvantagePlot")
+    )
+  )
 )
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-   
-   output$distPlot <- renderPlot({
-      # generate bins based on input$bins from ui.R
-      x    <- faithful[, 2] 
-      bins <- seq(min(x), max(x), length.out = input$bins + 1)
-      
-      # draw the histogram with the specified number of bins
-      hist(x, breaks = bins, col = 'darkgray', border = 'white')
-   })
+  
+  output$DemAdvantagePlot <- renderPlot({
+    
+    DemAdvantage <- ps7 %>% 
+      filter(win_party == input$win_party)
+    
+    ggplot(data = DemAdvantage, aes(x = dem_advantage, y = dem_advantage_results)) + geom_point()
+  })
 }
 
 # Run the application 
 shinyApp(ui = ui, server = server)
-

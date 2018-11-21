@@ -14,9 +14,9 @@ library(lubridate)
 # Then we made the state and state_district variables lower case, just so that will stay consisent across each.
 
 
-df <- read.csv("mt_2_results.csv", stringsAsFactors = FALSE) %>% 
-  mutate(state = as.character(ï..state)) %>% 
-  unite("state_district", c("ï..state", "district"), sep = "-") %>%
+df <- read_csv("mt_2_results.csv") %>% 
+  mutate(state = as.character(state)) %>% 
+  unite("state_district", c("state", "district"), sep = "-", remove = FALSE) %>%
   mutate(state_district = tolower(state_district)) %>%
   mutate(state = tolower(state))
 
@@ -86,18 +86,14 @@ polled <- polled %>%
   mutate(dem_advantage = ((Dem - Rep) / total)*100) %>%
   select(state_district, dem_advantage)
 
+# These lines of code are finding the dem advantage % from the actual results
+
+results <- df %>%
+  mutate(total = rep_votes + dem_votes + other_votes) %>%
+  mutate(dem_advantage_results = ((dem_votes - rep_votes) / total)*100) %>%
+  select(state_district, win_party, dem_advantage_results)
+
+joined <- left_join(polled, results, by = "state_district")
 
 
-# df[, 4]  <- as.numeric(df[, 4])
-# df[, 5]  <- as.numeric(df[, 5])
-# df[, 6]  <- as.numeric(df[, 6])
-# 
-# results <- df %>%  
-#   mutate(total = rep_votes + dem_votes + other_votes) %>%
-#   mutate(dem_advantage = ((rep_votes - dem_votes) / total)*100) %>%
-#   select(state_district, win_party, dem_advantage)
-
-joined <- left_join(polled, df, by = "state_district")
-
-  
 write_rds(joined,"ps_7_reimers_pirrmann_ryan/ps7.rds",compress="none")

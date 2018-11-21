@@ -13,11 +13,16 @@ library(lubridate)
 #Here we are reading in Mr. Schroeder's data and then creating a state_district variable that we can use to map it with the Upshot data.
 # Then we made the state and state_district variables lower case, just so that will stay consisent across each.
 
+
 df <- read.csv("mt_2_results.csv", stringsAsFactors = FALSE) %>% 
   mutate(state = as.character(ï..state)) %>% 
-  unite("state_district", c("ï..state", "district"), sep = "-") %>% 
-  mutate(state_district = tolower(state_district)) %>% 
+  unite("state_district", c("ï..state", "district"), sep = "-") %>%
+  mutate(state_district = tolower(state_district)) %>%
   mutate(state = tolower(state))
+
+
+
+
 
 # Here we are downloading the Upshot data directly from GitHub and then unzip the actual zip file to get at the data within the 
 # 2018-live-poll-results folder and then delete the zip file afterwards, because it is no longer needed.
@@ -83,19 +88,16 @@ polled <- polled %>%
 
 
 
-df[, 4]  <- as.numeric(df[, 4])
-df[, 5]  <- as.numeric(df[, 5])
-df[, 6]  <- as.numeric(df[, 6])
+# df[, 4]  <- as.numeric(df[, 4])
+# df[, 5]  <- as.numeric(df[, 5])
+# df[, 6]  <- as.numeric(df[, 6])
+# 
+# results <- df %>%  
+#   mutate(total = rep_votes + dem_votes + other_votes) %>%
+#   mutate(dem_advantage = ((rep_votes - dem_votes) / total)*100) %>%
+#   select(state_district, win_party, dem_advantage)
 
-results <- df %>%  
-  mutate(total = rep_votes + dem_votes + other_votes) %>%
-  mutate(dem_advantage = ((rep_votes - dem_votes) / total)*100) %>%
-  select(state_district, win_party, dem_advantage)
-
-
-
-
-
+joined <- left_join(polled, df, by = "state_district")
 
   
-write_rds(final_data,"ps_7_reimers_pirrmann_ryan/ps7.rds",compress="none")
+write_rds(joined,"ps_7_reimers_pirrmann_ryan/ps7.rds",compress="none")

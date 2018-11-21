@@ -10,6 +10,8 @@
 library(shiny)
 library(tidyverse)
 library(readr)
+library(ggplot2)
+library(ggrepel)
 
 ps7 <- readRDS("ps7.rds")
 
@@ -32,7 +34,15 @@ ui <- fluidPage(
     
     # Show a plot of the generated distribution
     mainPanel(
-      plotOutput("DemAdvantagePlot")
+      plotOutput("DemAdvantagePlot"),
+      HTML(
+        paste(
+          h3("Description"),
+          p("This graph is showing the predicted Democratic advantage in each election versus the actual results of
+            that election. The dropdown at the left allows you to filter by which party ended up winning the election.
+            There are a couple races that stick out in the spread between these two: tx-23, mn-08, wv-03, ny-11, ca-25.")
+        )
+      )
     )
   )
 )
@@ -45,7 +55,14 @@ server <- function(input, output) {
     DemAdvantage <- ps7 %>% 
       filter(win_party == input$win_party)
     
-    ggplot(data = DemAdvantage, aes(x = dem_advantage, y = dem_advantage_results)) + geom_point()
+    ggplot(data = DemAdvantage, aes(x = dem_advantage, y = dem_advantage_results, label = state_district)) + 
+      geom_point(color = "blue", size = 3) + 
+      geom_label_repel(aes(label = state_district),
+                       box.padding   = 0.35, 
+                       point.padding = 0.5,
+                       segment.color = 'grey50') +
+      theme_classic() + 
+      labs(x = "Democratic Advantage", y = "Democratic Advantage Results")
   })
 }
 
